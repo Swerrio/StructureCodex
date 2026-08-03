@@ -48,7 +48,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             build/libs/!(*-@(dev|sources|javadoc)).jar
-          name: ${{ env.MOD_VERSION }}+${{ env.MC_VERSION }}
+          name: "[${{ env.MC_VERSION }}] Structure Codex ${{ env.MOD_VERSION }}"
           version-type: release
           modrinth-environment: client_only_server_optional
           game-versions: ${{ env.MC_VERSION }}
