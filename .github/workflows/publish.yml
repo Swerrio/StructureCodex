@@ -47,7 +47,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             build/libs/!(*-@(dev|sources|javadoc)).jar
-          name: Structure Codex ${{ env.MOD_VERSION }} for Minecraft ${{ env.MC_VERSION }}
+          name: ${{ env.MOD_VERSION }}+${{ env.MC_VERSION }}
           version-type: release
           game-versions: ${{ env.MC_VERSION }}
           changelog-file: CHANGELOG.md
