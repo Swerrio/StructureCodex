@@ -4,7 +4,8 @@
   "structurecodex.screen.empty": "No structures in this category",
   "structurecodex.screen.no_selection": "Pick a structure from the list",
   "structurecodex.screen.no_preview": "No 3D preview for this structure",
-  "structurecodex.screen.unavailable": "Structure data is unavailable. It comes from the server, so open a singleplayer world or join a server running Structure Codex.",
+  "structurecodex.screen.unavailable": "Could not read structure data - see the log for details.",
+  "structurecodex.screen.preparing": "Reading structure data...",
   "structurecodex.screen.loading": "Building preview...",
 
   "structurecodex.category.all": "All",

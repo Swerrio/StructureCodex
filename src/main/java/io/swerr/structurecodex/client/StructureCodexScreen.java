@@ -369,7 +369,10 @@ public class StructureCodexScreen extends Screen {
         }
 
         if (catalog == null) {
-            graphics.textWithWordWrap(font, Component.translatable("structurecodex.screen.unavailable"),
+            boolean preparing = minecraft != null && !minecraft.hasSingleplayerServer()
+                    && ClientWorldgen.getIfReady() == null;
+            String message = preparing ? "structurecodex.screen.preparing" : "structurecodex.screen.unavailable";
+            graphics.textWithWordWrap(font, Component.translatable(message),
                     width / 2 - 150, height / 2 - 10, 300, COLOR_LABEL);
             return;
         }

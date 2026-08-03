@@ -4,7 +4,8 @@
   "structurecodex.screen.empty": "В этой категории нет структур",
   "structurecodex.screen.no_selection": "Выберите структуру из списка",
   "structurecodex.screen.no_preview": "Для этой структуры нет 3D-превью",
-  "structurecodex.screen.unavailable": "Данные о структурах недоступны. Они приходят с сервера - открой одиночный мир или зайди на сервер со Structure Codex.",
+  "structurecodex.screen.unavailable": "Не удалось прочитать данные о структурах - подробности в логе.",
+  "structurecodex.screen.preparing": "Читаем данные о структурах...",
   "structurecodex.screen.loading": "Строим предпросмотр...",
 
   "structurecodex.category.all": "Все",
