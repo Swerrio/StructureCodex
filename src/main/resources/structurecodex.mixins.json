@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.swerr.structurecodex.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "StructureManagerAccessor",
+    "StructureTemplateManagerMixin",
+    "StructureManagerMixin",
+    "StructureTemplateAccessor"
+  ],
+  "client": [
+    "GameRendererAccessor",
+    "GuiGraphicsExtractorAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
