@@ -1,6 +1,6 @@
 package io.swerr.structurecodex.client.preview;
 
-import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.vertex.VertexFormat.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
@@ -15,8 +15,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import io.swerr.structurecodex.mixin.GameRendererAccessor;
 import net.minecraft.client.renderer.DynamicUniforms;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.GlobalSettingsUniform;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.Vec3i;
@@ -26,8 +26,8 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.OptionalInt;
 
 public class StructurePreviewRenderer extends PictureInPictureRenderer<StructurePreviewRenderState> {
 
@@ -36,6 +36,10 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
 
     private GpuBuffer sectionUniform;
     private GpuBuffer globalsUniform;
+
+    public StructurePreviewRenderer(MultiBufferSource.BufferSource bufferSource) {
+        super(bufferSource);
+    }
 
     @Override
     public Class<StructurePreviewRenderState> getRenderStateClass() {
@@ -53,7 +57,7 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
     }
 
     @Override
-    protected void renderToTexture(StructurePreviewRenderState state, PoseStack pose, SubmitNodeCollector collector) {
+    protected void renderToTexture(StructurePreviewRenderState state, PoseStack pose) {
         PreviewGpuMesh mesh = state.mesh();
         if (mesh == null || mesh.isEmpty()) {
             return;
@@ -191,8 +195,7 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
         GpuSampler sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
 
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> "StructureCodex preview", colour, Optional.empty(), depth, OptionalDouble.empty(),
-                new RenderPass.RenderArea(0, 0, colour.getWidth(0), colour.getHeight(0)))) {
+                () -> "StructureCodex preview", colour, OptionalInt.empty(), depth, OptionalDouble.empty())) {
 
             pass.disableScissor();
             GameRendererAccessor renderer = (GameRendererAccessor) minecraft.gameRenderer;

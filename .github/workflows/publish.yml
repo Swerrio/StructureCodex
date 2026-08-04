@@ -51,6 +51,9 @@ jobs:
           name: "MC ${{ env.MC_VERSION }} // Structure Codex ${{ env.MOD_VERSION }}"
           version-type: release
           modrinth-environment: client_only_server_optional
-          game-versions: ${{ env.MC_VERSION }}
+          game-versions: |
+            26.1
+            26.1.1
+            26.1.2
           changelog-file: CHANGELOG.md
           retry-attempts: 3

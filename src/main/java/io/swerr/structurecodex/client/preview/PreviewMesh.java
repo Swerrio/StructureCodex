@@ -112,7 +112,7 @@ public final class PreviewMesh implements AutoCloseable {
                                              Map<ChunkSectionLayer, BufferBuilder> builders) {
         return builders.computeIfAbsent(layer, key -> new BufferBuilder(
                 allocators.computeIfAbsent(key, k -> new ByteBufferBuilder(k.bufferSize())),
-                key.pipeline().getPrimitiveTopology(),
+                key.pipeline().getVertexFormatMode(),
                 key.vertexFormat()));
     }
 

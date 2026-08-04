@@ -26,12 +26,12 @@
     "structurecodex.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=${loader_version}",
-    "fabric-api": "*",
+    "fabricloader": ">=0.16.0",
+    "fabric-api": ">=0.144.0",
     "java": ">=25",
-    "minecraft": "~26.2"
+    "minecraft": "~26.1"
   },
   "suggests": {
-    "modmenu": "*"
+    "modmenu": ">=18.0.0"
   }
 }

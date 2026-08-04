@@ -21,7 +21,7 @@ public class StructureCodexClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        PictureInPictureRendererRegistry.register(context -> new StructurePreviewRenderer());
+        PictureInPictureRendererRegistry.register(context -> new StructurePreviewRenderer(context.bufferSource()));
 
         KeyMapping.Category category = KeyMapping.Category.register(StructureCodex.id("main"));
 

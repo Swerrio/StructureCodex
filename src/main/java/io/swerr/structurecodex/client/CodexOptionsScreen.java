@@ -9,6 +9,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.Component;
 
+import java.util.List;
+
 public class CodexOptionsScreen extends OptionsSubScreen {
 
     private static final Component TITLE = Component.translatable("structurecodex.options.title");
@@ -55,11 +57,11 @@ public class CodexOptionsScreen extends OptionsSubScreen {
         this.list.addSmall(normalOverworld, blendPlacement);
         this.list.addBig(placeDistance);
         this.list.addBig(blockBudget);
-        this.list.addBig(Button.builder(
+        this.list.addSmall(List.of(Button.builder(
                         Component.translatable("structurecodex.options.browse"),
                         button -> this.minecraft.setScreenAndShow(new StructureCodexScreen(this)))
-                .width(310)
-                .build());
+                .width(150)
+                .build()));
     }
 
     @Override

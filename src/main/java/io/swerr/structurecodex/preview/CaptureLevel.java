@@ -383,7 +383,7 @@ public class CaptureLevel extends Level implements net.minecraft.world.level.Wor
         }
 
         @Override
-        public void markPosForPostProcessing(BlockPos pos) {
+        public void markPosForPostprocessing(BlockPos pos) {
         }
     }
 

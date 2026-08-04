@@ -1,6 +1,6 @@
 package io.swerr.structurecodex.client.preview;
 
-import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.vertex.VertexFormat.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;

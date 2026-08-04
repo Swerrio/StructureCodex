@@ -28,9 +28,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
-import net.minecraft.client.gui.components.tabs.TabNavigationBar;
-import net.minecraft.client.gui.layouts.GridLayout;
-import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -66,8 +63,9 @@ public class StructureCodexScreen extends Screen {
     private final TabManager tabManager = new TabManager(this::addRenderableWidget, this::removeWidget);
     private final List<CategoryTab> categoryTabs = new ArrayList<>();
 
+    private final List<CodexTabButton> tabButtons = new ArrayList<>();
+
     private StructureCatalog catalog;
-    private TabNavigationBar tabNavigationBar;
     private StructureEntry selected;
     private Button placeButton;
 
@@ -134,8 +132,8 @@ public class StructureCodexScreen extends Screen {
     private void toggleFullscreen() {
         fullscreen = !fullscreen;
         boolean show = !fullscreen;
-        if (tabNavigationBar != null) {
-            tabNavigationBar.visible = show;
+        for (CodexTabButton button : tabButtons) {
+            button.visible = show;
         }
         if (searchBox != null) {
             searchBox.visible = show;
@@ -248,15 +246,14 @@ public class StructureCodexScreen extends Screen {
         }
 
         if (!categoryTabs.isEmpty()) {
-            TabNavigationBar.Builder builder = TabNavigationBar.builder(tabManager, 0, 0, width, TAB_BAR_HEIGHT);
+            tabButtons.clear();
             for (CategoryTab tab : categoryTabs) {
                 int tabWidth = Math.max(MIN_TAB_WIDTH, font.width(tab.getTabTitle()) + TAB_PADDING);
                 tabsWidth += tabWidth;
-                builder.addTab(new CodexTabButton(tabManager, tab, tabWidth, TAB_BAR_HEIGHT), tab);
+                tabButtons.add(addRenderableWidget(
+                        new CodexTabButton(tabManager, tab, tabWidth, TAB_BAR_HEIGHT)));
             }
 
-            tabNavigationBar = builder.build();
-            addRenderableWidget(tabNavigationBar);
             tabManager.setCurrentTab(categoryTabs.getFirst(), false);
             tabManager.setTabArea(contentArea());
             applyTabScroll();
@@ -300,12 +297,15 @@ public class StructureCodexScreen extends Screen {
     }
 
     private void applyTabScroll() {
-        if (tabNavigationBar == null) {
+        if (tabButtons.isEmpty()) {
             return;
         }
         tabScroll = Math.max(0, Math.min(maxTabScroll(), tabScroll));
-        tabNavigationBar.setX(tabsOverflow() ? -tabScroll : (width - tabsWidth) / 2);
-        tabNavigationBar.arrangeElements(width);
+        int x = tabsOverflow() ? -tabScroll : (width - tabsWidth) / 2;
+        for (CodexTabButton button : tabButtons) {
+            button.setPosition(x, 0);
+            x += button.getWidth();
+        }
     }
 
     private ScreenRectangle contentArea() {
@@ -570,7 +570,6 @@ public class StructureCodexScreen extends Screen {
 
         private final StructureCategory category;
         private final StructureList list;
-        private final GridLayout layout = new GridLayout();
 
         CategoryTab(StructureCategory category) {
             this.category = category;
@@ -602,11 +601,6 @@ public class StructureCodexScreen extends Screen {
 
         void applyFilter(String query) {
             list.setEntries(catalog.in(category, query));
-        }
-
-        @Override
-        public Layout getLayout() {
-            return layout;
         }
     }
 }
