@@ -4,6 +4,8 @@
   "package": "io.swerr.structurecodex.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "ChunkAccessMixin",
+    "GravityProcessorMixin",
     "StructureManagerAccessor",
     "StructureTemplateManagerMixin",
     "StructureManagerMixin",

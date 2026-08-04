@@ -178,6 +178,11 @@ public class CaptureLevel extends Level implements net.minecraft.world.level.Wor
 
     @Override
     public int getHeight(Heightmap.Types type, int x, int z) {
+        io.swerr.structurecodex.StructurePlacer.Heights heights =
+                io.swerr.structurecodex.StructurePlacer.heights();
+        if (heights != null) {
+            return heights.get(type, x, z);
+        }
         return readThrough && isLoaded(x, z) ? origin.getHeight(type, x, z) : GROUND;
     }
 
