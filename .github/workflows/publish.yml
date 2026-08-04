@@ -10,18 +10,37 @@ permissions:
 
 jobs:
   publish:
-    name: Publish
+    name: Publish ${{ matrix.branch }}
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - branch: master
+            java: '25'
+            games: 26.2
+          - branch: '26.1'
+            java: '25'
+            games: |
+              26.1
+              26.1.1
+              26.1.2
+          - branch: '1.21.11'
+            java: '21'
+            games: 1.21.11
 
-      - name: Set up JDK 25
+    steps:
+      - name: Check out ${{ matrix.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '25'
+          java-version: ${{ matrix.java }}
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -40,17 +59,50 @@ jobs:
           cat fmj.json
           grep -q "\"version\": \"${MOD_VERSION}+${MC_VERSION}\"" fmj.json
 
-      - name: Publish to Modrinth and GitHub
+      - name: Publish to Modrinth
         uses: Kira-NT/mc-publish@v3.3.1
         with:
           modrinth-id: QoJh8dO8
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             build/libs/!(*-@(dev|sources|javadoc)).jar
-          name: "MC ${{ env.MC_VERSION }} // Structure Codex ${{ env.MOD_VERSION }}"
+          version: ${{ env.MOD_VERSION }}+${{ env.MC_VERSION }}
+          name: MC ${{ env.MC_VERSION }} // Structure Codex ${{ env.MOD_VERSION }}
           version-type: release
           modrinth-environment: "client_required,server_optional"
-          game-versions: ${{ env.MC_VERSION }}
+          game-versions: ${{ matrix.games }}
           changelog-file: CHANGELOG.md
           retry-attempts: 3
+
+      - name: Keep the jar for the release
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-${{ matrix.branch }}
+          path: build/libs/structurecodex-*.jar
+          if-no-files-found: error
+
+  release:
+    name: GitHub release
+    needs: publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Collect the jars
+        uses: actions/download-artifact@v4
+        with:
+          path: jars
+          merge-multiple: true
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          find jars -name '*-sources.jar' -delete
+          ls -la jars
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME#v}" \
+            --notes-file CHANGELOG.md \
+            jars/*.jar
