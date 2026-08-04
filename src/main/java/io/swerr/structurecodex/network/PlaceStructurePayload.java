@@ -7,7 +7,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
-public record PlaceStructurePayload(Identifier structure, boolean blend, int distance)
+public record PlaceStructurePayload(Identifier structure, boolean blend, boolean vanillaTerrain, int distance)
         implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<PlaceStructurePayload> TYPE =
@@ -16,6 +16,7 @@ public record PlaceStructurePayload(Identifier structure, boolean blend, int dis
     public static final StreamCodec<ByteBuf, PlaceStructurePayload> CODEC = StreamCodec.composite(
             Identifier.STREAM_CODEC, PlaceStructurePayload::structure,
             ByteBufCodecs.BOOL, PlaceStructurePayload::blend,
+            ByteBufCodecs.BOOL, PlaceStructurePayload::vanillaTerrain,
             ByteBufCodecs.VAR_INT, PlaceStructurePayload::distance,
             PlaceStructurePayload::new);
 

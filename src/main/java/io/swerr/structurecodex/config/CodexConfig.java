@@ -15,9 +15,10 @@ import java.nio.file.Path;
 public record CodexConfig(boolean previewInNormalOverworld,
                           int previewBlockBudget,
                           boolean blendPlacement,
+                          boolean vanillaTerrain,
                           int placeDistance) {
 
-    public static final CodexConfig DEFAULT = new CodexConfig(true, 120000, true, 3);
+    public static final CodexConfig DEFAULT = new CodexConfig(true, 120000, true, false, 3);
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path PATH =

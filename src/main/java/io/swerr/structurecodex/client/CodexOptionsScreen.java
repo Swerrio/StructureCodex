@@ -26,6 +26,12 @@ public class CodexOptionsScreen extends OptionsSubScreen {
                     Component.translatable("structurecodex.options.blend.tooltip")),
             CodexConfig.get().blendPlacement());
 
+    private final OptionInstance<Boolean> vanillaTerrain = OptionInstance.createBoolean(
+            "structurecodex.options.vanilla_terrain",
+            OptionInstance.cachedConstantTooltip(
+                    Component.translatable("structurecodex.options.vanilla_terrain.tooltip")),
+            CodexConfig.get().vanillaTerrain());
+
     private final OptionInstance<Integer> placeDistance = new OptionInstance<>(
             "structurecodex.options.place_distance",
             OptionInstance.cachedConstantTooltip(
@@ -53,6 +59,7 @@ public class CodexOptionsScreen extends OptionsSubScreen {
     @Override
     protected void addOptions() {
         this.list.addSmall(normalOverworld, blendPlacement);
+        this.list.addBig(vanillaTerrain);
         this.list.addBig(placeDistance);
         this.list.addBig(blockBudget);
         this.list.addBig(Button.builder(
@@ -69,6 +76,7 @@ public class CodexOptionsScreen extends OptionsSubScreen {
                 normalOverworld.get(),
                 blockBudget.get() * BUDGET_STEP,
                 blendPlacement.get(),
+                vanillaTerrain.get(),
                 placeDistance.get()));
     }
 }

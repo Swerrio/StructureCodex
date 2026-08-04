@@ -523,7 +523,8 @@ public class StructureCodexScreen extends Screen {
         }
         if (ClientPlayNetworking.canSend(PlaceStructurePayload.TYPE)) {
             ClientPlayNetworking.send(new PlaceStructurePayload(selected.id(),
-                    CodexConfig.get().blendPlacement(), CodexConfig.get().placeDistance()));
+                    CodexConfig.get().blendPlacement(), CodexConfig.get().vanillaTerrain(),
+                    CodexConfig.get().placeDistance()));
             onClose();
             return;
         }
