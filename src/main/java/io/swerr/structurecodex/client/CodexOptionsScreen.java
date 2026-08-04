@@ -9,6 +9,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.Component;
 
+import java.util.List;
+
 public class CodexOptionsScreen extends OptionsSubScreen {
 
     private static final Component TITLE = Component.translatable("structurecodex.options.title");
@@ -25,6 +27,12 @@ public class CodexOptionsScreen extends OptionsSubScreen {
             OptionInstance.cachedConstantTooltip(
                     Component.translatable("structurecodex.options.blend.tooltip")),
             CodexConfig.get().blendPlacement());
+
+    private final OptionInstance<Boolean> vanillaTerrain = OptionInstance.createBoolean(
+            "structurecodex.options.vanilla_terrain",
+            OptionInstance.cachedConstantTooltip(
+                    Component.translatable("structurecodex.options.vanilla_terrain.tooltip")),
+            CodexConfig.get().vanillaTerrain());
 
     private final OptionInstance<Integer> placeDistance = new OptionInstance<>(
             "structurecodex.options.place_distance",
@@ -53,13 +61,13 @@ public class CodexOptionsScreen extends OptionsSubScreen {
     @Override
     protected void addOptions() {
         this.list.addSmall(normalOverworld, blendPlacement);
+        this.list.addBig(vanillaTerrain);
         this.list.addBig(placeDistance);
         this.list.addBig(blockBudget);
-        this.list.addBig(Button.builder(
-                        Component.translatable("structurecodex.options.browse"),
-                        button -> this.minecraft.setScreenAndShow(new StructureCodexScreen(this)))
-                .width(310)
-                .build());
+        this.list.addSmall(List.<net.minecraft.client.gui.components.AbstractWidget>of(
+                Button.builder(Component.translatable("structurecodex.options.browse"),
+                                button -> this.minecraft.setScreenAndShow(new StructureCodexScreen(this)))
+                        .build()));
     }
 
     @Override
@@ -69,6 +77,7 @@ public class CodexOptionsScreen extends OptionsSubScreen {
                 normalOverworld.get(),
                 blockBudget.get() * BUDGET_STEP,
                 blendPlacement.get(),
+                vanillaTerrain.get(),
                 placeDistance.get()));
     }
 }

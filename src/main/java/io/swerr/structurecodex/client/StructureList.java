@@ -2,7 +2,7 @@ package io.swerr.structurecodex.client;
 
 import io.swerr.structurecodex.catalog.StructureEntry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -54,9 +54,9 @@ public class StructureList extends ObjectSelectionList<StructureList.StructureRo
         }
 
         @Override
-        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+        public void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
                                    boolean hovered, float partialTick) {
-            graphics.centeredText(Minecraft.getInstance().font, entry.displayName(),
+            graphics.drawCenteredString(Minecraft.getInstance().font, entry.displayName(),
                     getContentX() + getContentWidth() / 2,
                     getContentY() + (getContentHeight() - TEXT_HEIGHT) / 2,
                     entry.isVanilla() ? COLOR_VANILLA : COLOR_MODDED);

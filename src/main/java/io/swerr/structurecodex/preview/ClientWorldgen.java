@@ -53,7 +53,7 @@ public final class ClientWorldgen {
             if (pending == null) {
                 pending = CompletableFuture
                         .supplyAsync(() -> openPacks(validator), Util.backgroundExecutor())
-                        .thenCompose(ClientWorldgen::loadRegistries)
+                        .thenApply(ClientWorldgen::loadRegistries)
                         .whenComplete(ClientWorldgen::publish);
             }
             return pending;
@@ -98,7 +98,7 @@ public final class ClientWorldgen {
         return new Packs(resources, configuration);
     }
 
-    private static CompletableFuture<Loaded> loadRegistries(Packs packs) {
+    private static Loaded loadRegistries(Packs packs) {
         CloseableResourceManager resources = packs.resources();
         try {
             LayeredRegistryAccess<RegistryLayer> layers = RegistryLayer.createRegistryAccess();
@@ -107,16 +107,10 @@ public final class ClientWorldgen {
             RegistryAccess.Frozen loadContext = layers.getAccessForLoading(RegistryLayer.WORLDGEN);
             List<HolderLookup.RegistryLookup<?>> context =
                     TagLoader.buildUpdatedLookups(loadContext, staticTags);
-
-            return RegistryDataLoader
-                    .load(resources, context, RegistryDataLoader.WORLDGEN_REGISTRIES, Util.backgroundExecutor())
-                    .thenApply(worldgen -> finish(layers, worldgen, packs))
-                    .whenComplete((loaded, error) -> {
-                        if (error != null) {
-                            resources.close();
-                        }
-                    });
-        } catch (RuntimeException exception) {
+            RegistryAccess.Frozen worldgen = RegistryDataLoader.load(
+                    resources, context, RegistryDataLoader.WORLDGEN_REGISTRIES);
+            return finish(layers, worldgen, packs);
+        } catch (Throwable exception) {
             resources.close();
             throw exception;
         }

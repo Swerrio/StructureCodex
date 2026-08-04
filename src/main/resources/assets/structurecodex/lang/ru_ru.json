@@ -46,6 +46,8 @@
   "structurecodex.options.normal_overworld.tooltip": "Строить превью на стандартном генераторе обычного мира",
   "structurecodex.options.blend": "Умная вставка",
   "structurecodex.options.blend.tooltip": "Ставить только блоки самой постройки и вычищать её внутренности",
+  "structurecodex.options.vanilla_terrain": "Правка рельефа",
+  "structurecodex.options.vanilla_terrain.tooltip": "Вырезать полость под постройкой и сажать её на уровень земли",
   "structurecodex.options.place_distance": "Расстояние вставки",
   "structurecodex.options.place_distance.tooltip": "На сколько блоков перед тобой ставится постройка",
   "structurecodex.options.block_budget": "Лимит блоков превью",

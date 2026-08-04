@@ -1,8 +1,8 @@
 package io.swerr.structurecodex.client.preview;
 
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
-import org.joml.Matrix3x2fc;
+import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
+import org.joml.Matrix3x2f;
 
 public final class StructurePreviewRenderState implements PictureInPictureRenderState {
 
@@ -76,7 +76,7 @@ public final class StructurePreviewRenderState implements PictureInPictureRender
     }
 
     @Override
-    public Matrix3x2fc pose() {
+    public Matrix3x2f pose() {
         return PictureInPictureRenderState.IDENTITY_POSE;
     }
 

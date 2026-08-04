@@ -2,8 +2,10 @@
   "required": true,
   "minVersion": "0.8",
   "package": "io.swerr.structurecodex.mixin",
-  "compatibilityLevel": "JAVA_25",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ChunkAccessMixin",
+    "GravityProcessorMixin",
     "StructureManagerAccessor",
     "StructureTemplateManagerMixin",
     "StructureManagerMixin",
@@ -11,7 +13,7 @@
   ],
   "client": [
     "GameRendererAccessor",
-    "GuiGraphicsExtractorAccessor"
+    "GuiGraphicsAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

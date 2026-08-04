@@ -1,2 +1,1 @@
-- Load on Fabric Loader 0.16 and newer. The mod used to demand the exact loader version it was built against and refused to appear on anything older.
-- Require Fabric API 0.152.1 or newer instead of any version, so a mismatch now reports a missing dependency instead of crashing.
+Initial release for Minecraft 1.21.11. Browse and preview every structure in the game, and place one in the world.

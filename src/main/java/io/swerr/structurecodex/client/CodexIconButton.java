@@ -1,6 +1,6 @@
 package io.swerr.structurecodex.client;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -74,8 +74,8 @@ public class CodexIconButton extends AbstractButton {
     }
 
     @Override
-    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        extractDefaultSprite(graphics);
+    protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        renderDefaultSprite(graphics);
 
         int originX = getX() + (getWidth() - icon[0].length()) / 2;
         int originY = getY() + (getHeight() - icon.length) / 2;
@@ -84,7 +84,7 @@ public class CodexIconButton extends AbstractButton {
         drawIcon(graphics, originX, originY, color);
     }
 
-    private void drawIcon(GuiGraphicsExtractor graphics, int originX, int originY, int color) {
+    private void drawIcon(GuiGraphics graphics, int originX, int originY, int color) {
         for (int row = 0; row < icon.length; row++) {
             String line = icon[row];
             int start = -1;

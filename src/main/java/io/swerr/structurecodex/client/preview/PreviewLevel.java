@@ -1,9 +1,8 @@
 package io.swerr.structurecodex.client.preview;
 
-import net.minecraft.client.ClientClockManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
@@ -16,7 +15,6 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
-import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
@@ -25,7 +23,6 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
-import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -112,8 +109,16 @@ public class PreviewLevel extends Level implements BlockAndTintGetter, LightChun
     }
 
     @Override
-    public CardinalLighting cardinalLighting() {
-        return CardinalLighting.DEFAULT;
+    public float getShade(net.minecraft.core.Direction direction, boolean shade) {
+        if (!shade) {
+            return 1.0F;
+        }
+        return switch (direction) {
+            case DOWN -> 0.5F;
+            case UP -> 1.0F;
+            case NORTH, SOUTH -> 0.8F;
+            case WEST, EAST -> 0.6F;
+        };
     }
 
     @Override
@@ -174,11 +179,6 @@ public class PreviewLevel extends Level implements BlockAndTintGetter, LightChun
     @Override
     public LevelTickAccess<Fluid> getFluidTicks() {
         return BlackholeTickAccess.emptyLevelList();
-    }
-
-    @Override
-    public ClockManager clockManager() {
-        return new ClientClockManager();
     }
 
     @Override

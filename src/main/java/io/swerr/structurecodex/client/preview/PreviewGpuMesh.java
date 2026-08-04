@@ -1,6 +1,6 @@
 package io.swerr.structurecodex.client.preview;
 
-import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -21,7 +21,7 @@ public final class PreviewGpuMesh implements AutoCloseable {
     public record Layer(ChunkSectionLayer layer,
                         GpuBuffer vertexBuffer,
                         GpuBuffer indexBuffer,
-                        IndexType indexType,
+                        VertexFormat.IndexType indexType,
                         int indexCount) {
     }
 
@@ -95,7 +95,7 @@ public final class PreviewGpuMesh implements AutoCloseable {
                     data.vertexBuffer());
 
             GpuBuffer indexBuffer;
-            IndexType indexType;
+            VertexFormat.IndexType indexType;
             if (data.indexBuffer() != null) {
                 indexBuffer = device.createBuffer(
                         () -> "structurecodex preview indices",
@@ -112,7 +112,7 @@ public final class PreviewGpuMesh implements AutoCloseable {
                 } finally {
                     MemoryUtil.memFree(generated);
                 }
-                indexType = IndexType.INT;
+                indexType = VertexFormat.IndexType.INT;
             }
 
             uploaded.add(new Layer(entry.getKey(), vertices, indexBuffer, indexType, draw.indexCount()));

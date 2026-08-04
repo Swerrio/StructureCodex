@@ -110,10 +110,10 @@ public final class StructureAssembler {
             int edge = ring * RETRY_STEP;
             for (int i = -ring; i <= ring; i++) {
                 int along = i * RETRY_STEP;
-                result.add(new ChunkPos(anchor.x() + along, anchor.z() - edge));
-                result.add(new ChunkPos(anchor.x() + along, anchor.z() + edge));
-                result.add(new ChunkPos(anchor.x() - edge, anchor.z() + along));
-                result.add(new ChunkPos(anchor.x() + edge, anchor.z() + along));
+                result.add(new ChunkPos(anchor.x + along, anchor.z - edge));
+                result.add(new ChunkPos(anchor.x + along, anchor.z + edge));
+                result.add(new ChunkPos(anchor.x - edge, anchor.z + along));
+                result.add(new ChunkPos(anchor.x + edge, anchor.z + along));
             }
         }
         return result;
@@ -138,7 +138,7 @@ public final class StructureAssembler {
             Pair<BlockPos, Holder<Biome>> found = source.findBiomeHorizontal(0, 64, 0,
                     BIOME_SEARCH_RADIUS, BIOME_SEARCH_STEP, structure.biomes()::contains, random, true, sampler);
             if (found != null) {
-                return ChunkPos.containing(found.getFirst());
+                return new ChunkPos(found.getFirst());
             }
         } catch (Exception exception) {
             StructureCodex.LOGGER.warn("Could not locate a biome for a structure preview", exception);

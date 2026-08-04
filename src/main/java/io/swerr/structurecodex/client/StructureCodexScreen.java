@@ -14,27 +14,22 @@ import net.minecraft.util.Util;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
 import java.util.concurrent.CompletableFuture;
-import io.swerr.structurecodex.mixin.GuiGraphicsExtractorAccessor;
+import io.swerr.structurecodex.mixin.GuiGraphicsAccessor;
 import io.swerr.structurecodex.network.PlaceStructurePayload;
 import io.swerr.structurecodex.preview.StructureAssembler;
 import io.swerr.structurecodex.preview.StructurePreviewData;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
-import net.minecraft.client.gui.components.tabs.TabNavigationBar;
-import net.minecraft.client.gui.layouts.GridLayout;
-import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
@@ -45,7 +40,6 @@ import java.util.function.Consumer;
 public class StructureCodexScreen extends Screen {
 
     private static final int TAB_BAR_HEIGHT = 24;
-    private static final int SCROLLBAR_HEIGHT = 4;
     private static final int SEARCH_HEIGHT = 24;
     private static final int INFO_HEIGHT = 58;
     private static final int TOOL_BUTTON_SIZE = 16;
@@ -60,14 +54,13 @@ public class StructureCodexScreen extends Screen {
     private static final int COLOR_TRACK = 0x60000000;
     private static final int COLOR_BACKDROP = 0xF00E0E12;
     private static final int COLOR_THUMB = 0xFF8B8B8B;
-    private static final int COLOR_THUMB_ACTIVE = 0xFFCFCFCF;
 
     private final Screen parent;
     private final TabManager tabManager = new TabManager(this::addRenderableWidget, this::removeWidget);
     private final List<CategoryTab> categoryTabs = new ArrayList<>();
 
     private StructureCatalog catalog;
-    private TabNavigationBar tabNavigationBar;
+    private final List<CodexTabButton> tabButtons = new ArrayList<>();
     private StructureEntry selected;
     private Button placeButton;
 
@@ -134,9 +127,7 @@ public class StructureCodexScreen extends Screen {
     private void toggleFullscreen() {
         fullscreen = !fullscreen;
         boolean show = !fullscreen;
-        if (tabNavigationBar != null) {
-            tabNavigationBar.visible = show;
-        }
+        setTabBarVisible(show);
         if (searchBox != null) {
             searchBox.visible = show;
         }
@@ -208,9 +199,17 @@ public class StructureCodexScreen extends Screen {
                 });
     }
 
-    private int tabsWidth;
-    private int tabScroll;
-    private boolean draggingScrollbar;
+    private boolean tabBarAttached;
+
+    private void setTabBarVisible(boolean show) {
+        if (show == tabBarAttached) {
+            return;
+        }
+        for (CodexTabButton button : tabButtons) {
+            button.visible = show;
+        }
+        tabBarAttached = show;
+    }
 
     private int listWidth() {
         return width / 2 - 12;
@@ -239,7 +238,8 @@ public class StructureCodexScreen extends Screen {
         }
 
         categoryTabs.clear();
-        tabsWidth = 0;
+        tabButtons.clear();
+        tabBarAttached = false;
 
         if (catalog != null) {
             for (StructureCategory category : catalog.populatedTabs()) {
@@ -248,18 +248,17 @@ public class StructureCodexScreen extends Screen {
         }
 
         if (!categoryTabs.isEmpty()) {
-            TabNavigationBar.Builder builder = TabNavigationBar.builder(tabManager, 0, 0, width, TAB_BAR_HEIGHT);
+            int x = 0;
             for (CategoryTab tab : categoryTabs) {
                 int tabWidth = Math.max(MIN_TAB_WIDTH, font.width(tab.getTabTitle()) + TAB_PADDING);
-                tabsWidth += tabWidth;
-                builder.addTab(new CodexTabButton(tabManager, tab, tabWidth, TAB_BAR_HEIGHT), tab);
+                CodexTabButton button = new CodexTabButton(tabManager, tab, tabWidth, TAB_BAR_HEIGHT);
+                button.setPosition(x, 0);
+                x += tabWidth;
+                tabButtons.add(addRenderableWidget(button));
             }
-
-            tabNavigationBar = builder.build();
-            addRenderableWidget(tabNavigationBar);
+            tabBarAttached = true;
             tabManager.setCurrentTab(categoryTabs.getFirst(), false);
             tabManager.setTabArea(contentArea());
-            applyTabScroll();
         }
 
         if (catalog != null) {
@@ -291,25 +290,8 @@ public class StructureCodexScreen extends Screen {
         layoutToolButtons();
     }
 
-    private boolean tabsOverflow() {
-        return tabsWidth > width;
-    }
-
-    private int maxTabScroll() {
-        return Math.max(0, tabsWidth - width);
-    }
-
-    private void applyTabScroll() {
-        if (tabNavigationBar == null) {
-            return;
-        }
-        tabScroll = Math.max(0, Math.min(maxTabScroll(), tabScroll));
-        tabNavigationBar.setX(tabsOverflow() ? -tabScroll : (width - tabsWidth) / 2);
-        tabNavigationBar.arrangeElements(width);
-    }
-
     private ScreenRectangle contentArea() {
-        int top = TAB_BAR_HEIGHT + (tabsOverflow() ? SCROLLBAR_HEIGHT + 2 : 0) + 4;
+        int top = TAB_BAR_HEIGHT + 4;
         return new ScreenRectangle(0, top, width, height - top - FOOTER_HEIGHT);
     }
 
@@ -346,33 +328,15 @@ public class StructureCodexScreen extends Screen {
         loadPreview();
     }
 
-    private int thumbWidth() {
-        return Math.max(20, (int) ((long) width * width / Math.max(1, tabsWidth)));
-    }
-
-    private int thumbX() {
-        int travel = width - thumbWidth();
-        int max = maxTabScroll();
-        return max == 0 ? 0 : (int) ((long) tabScroll * travel / max);
-    }
-
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
-
-        if (tabsOverflow()) {
-            int top = TAB_BAR_HEIGHT;
-            graphics.fill(0, top, width, top + SCROLLBAR_HEIGHT, COLOR_TRACK);
-            int x = thumbX();
-            graphics.fill(x, top, x + thumbWidth(), top + SCROLLBAR_HEIGHT,
-                    draggingScrollbar ? COLOR_THUMB_ACTIVE : COLOR_THUMB);
-        }
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
 
         if (catalog == null) {
             boolean preparing = minecraft != null && !minecraft.hasSingleplayerServer()
                     && ClientWorldgen.getIfReady() == null;
             String message = preparing ? "structurecodex.screen.preparing" : "structurecodex.screen.unavailable";
-            graphics.textWithWordWrap(font, Component.translatable(message),
+            graphics.drawWordWrap(font, Component.translatable(message),
                     width / 2 - 150, height / 2 - 10, 300, COLOR_LABEL);
             return;
         }
@@ -381,7 +345,7 @@ public class StructureCodexScreen extends Screen {
         int detailTop = contentArea().top() + 4;
 
         if (selected == null) {
-            graphics.text(font, Component.translatable("structurecodex.screen.no_selection"),
+            graphics.drawString(font, Component.translatable("structurecodex.screen.no_selection"),
                     detailLeft, detailTop, COLOR_LABEL);
             return;
         }
@@ -393,17 +357,17 @@ public class StructureCodexScreen extends Screen {
                 graphics.fill(0, 0, width, height, COLOR_BACKDROP);
             }
             graphics.fill(previewLeft(), previewTop(), previewRight(), previewBottom(), COLOR_TRACK);
-            graphics.outline(previewLeft(), previewTop(),
+            graphics.renderOutline(previewLeft(), previewTop(),
                     previewRight() - previewLeft(), previewBottom() - previewTop(), COLOR_THUMB);
 
             if (quads != null) {
-                GuiRenderState renderState = ((GuiGraphicsExtractorAccessor) graphics).structurecodex$guiRenderState();
-                renderState.addPicturesInPictureState(new StructurePreviewRenderState(
+                GuiRenderState renderState = ((GuiGraphicsAccessor) graphics).structurecodex$guiRenderState();
+                renderState.submitPicturesInPictureState(new StructurePreviewRenderState(
                         quads, previewYaw, previewPitch, previewZoom,
                         previewLeft() + 1, previewTop() + 1, previewRight() - 1, previewBottom() - 1,
                         1.0F, null));
             } else {
-                graphics.centeredText(font, Component.translatable(previewLoading
+                graphics.drawCenteredString(font, Component.translatable(previewLoading
                                 ? "structurecodex.screen.loading"
                                 : "structurecodex.screen.no_preview"),
                         (previewLeft() + previewRight()) / 2,
@@ -417,7 +381,7 @@ public class StructureCodexScreen extends Screen {
             return;
         }
 
-        graphics.text(font, Component.literal(selected.displayName()), detailLeft, y, COLOR_VALUE);
+        graphics.drawString(font, Component.literal(selected.displayName()), detailLeft, y, COLOR_VALUE);
         y += font.lineHeight + 3;
 
         y = infoLine(graphics, detailLeft, y, "structurecodex.info.id", selected.id().toString());
@@ -440,20 +404,15 @@ public class StructureCodexScreen extends Screen {
         return colon < 0 ? id : id.substring(colon + 1);
     }
 
-    private int infoLine(GuiGraphicsExtractor graphics, int x, int y, String key, String value) {
+    private int infoLine(GuiGraphics graphics, int x, int y, String key, String value) {
         Component label = Component.translatable(key);
-        graphics.text(font, label, x, y, COLOR_LABEL);
-        graphics.text(font, value, x + font.width(label) + 6, y, COLOR_VALUE);
+        graphics.drawString(font, label, x, y, COLOR_LABEL);
+        graphics.drawString(font, value, x + font.width(label) + 6, y, COLOR_VALUE);
         return y + font.lineHeight + 2;
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (tabsOverflow() && event.y() >= TAB_BAR_HEIGHT && event.y() < TAB_BAR_HEIGHT + SCROLLBAR_HEIGHT) {
-            draggingScrollbar = true;
-            dragScrollbarTo(event.x());
-            return true;
-        }
         if (super.mouseClicked(event, doubleClick)) {
             return true;
         }
@@ -472,10 +431,6 @@ public class StructureCodexScreen extends Screen {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-        if (draggingScrollbar) {
-            dragScrollbarTo(event.x());
-            return true;
-        }
         if (draggingPreview) {
             previewYaw = (float) ((previewYaw + (event.x() - lastDragX) * 0.8) % 360.0);
             previewPitch = (float) Math.max(-89.0, Math.min(89.0, previewPitch + (event.y() - lastDragY) * 0.5));
@@ -488,28 +443,12 @@ public class StructureCodexScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        draggingScrollbar = false;
         draggingPreview = false;
         return super.mouseReleased(event);
     }
 
-    private void dragScrollbarTo(double mouseX) {
-        int travel = width - thumbWidth();
-        if (travel <= 0) {
-            return;
-        }
-        double target = mouseX - thumbWidth() / 2.0;
-        tabScroll = (int) Math.round(target / travel * maxTabScroll());
-        applyTabScroll();
-    }
-
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (tabsOverflow() && mouseY < TAB_BAR_HEIGHT + SCROLLBAR_HEIGHT) {
-            tabScroll -= (int) (scrollY * 20);
-            applyTabScroll();
-            return true;
-        }
         if (quads != null && inPreview(mouseX, mouseY)) {
             previewZoom = (float) Math.max(0.25, Math.min(5.0, previewZoom + scrollY * 0.15));
             return true;
@@ -523,12 +462,13 @@ public class StructureCodexScreen extends Screen {
         }
         if (ClientPlayNetworking.canSend(PlaceStructurePayload.TYPE)) {
             ClientPlayNetworking.send(new PlaceStructurePayload(selected.id(),
-                    CodexConfig.get().blendPlacement(), CodexConfig.get().placeDistance()));
+                    CodexConfig.get().blendPlacement(), CodexConfig.get().vanillaTerrain(),
+                    CodexConfig.get().placeDistance()));
             onClose();
             return;
         }
         if (minecraft != null && minecraft.player != null) {
-            minecraft.player.sendSystemMessage(Component.translatable("structurecodex.place.no_server"));
+            minecraft.player.displayClientMessage(Component.translatable("structurecodex.place.no_server"), false);
         }
         onClose();
     }
@@ -570,7 +510,6 @@ public class StructureCodexScreen extends Screen {
 
         private final StructureCategory category;
         private final StructureList list;
-        private final GridLayout layout = new GridLayout();
 
         CategoryTab(StructureCategory category) {
             this.category = category;
@@ -602,11 +541,6 @@ public class StructureCodexScreen extends Screen {
 
         void applyFilter(String query) {
             list.setEntries(catalog.in(category, query));
-        }
-
-        @Override
-        public Layout getLayout() {
-            return layout;
         }
     }
 }

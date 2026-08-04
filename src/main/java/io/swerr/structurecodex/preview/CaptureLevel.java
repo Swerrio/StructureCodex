@@ -14,7 +14,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
-import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
@@ -178,6 +177,11 @@ public class CaptureLevel extends Level implements net.minecraft.world.level.Wor
 
     @Override
     public int getHeight(Heightmap.Types type, int x, int z) {
+        io.swerr.structurecodex.StructurePlacer.Heights heights =
+                io.swerr.structurecodex.StructurePlacer.heights();
+        if (heights != null) {
+            return heights.get(type, x, z);
+        }
         return readThrough && isLoaded(x, z) ? origin.getHeight(type, x, z) : GROUND;
     }
 
@@ -237,8 +241,8 @@ public class CaptureLevel extends Level implements net.minecraft.world.level.Wor
     }
 
     @Override
-    public ClockManager clockManager() {
-        return holder -> 0L;
+    public float getShade(net.minecraft.core.Direction direction, boolean shade) {
+        return 1.0F;
     }
 
     @Override
@@ -374,6 +378,25 @@ public class CaptureLevel extends Level implements net.minecraft.world.level.Wor
         public boolean isDifficultyLocked() {
             return false;
         }
+
+        @Override
+        public long getDayTime() {
+            return 6000L;
+        }
+
+        @Override
+        public boolean isThundering() {
+            return false;
+        }
+
+        @Override
+        public boolean isRaining() {
+            return false;
+        }
+
+        @Override
+        public void setRaining(boolean raining) {
+        }
     }
 
     private static final class CaptureChunk extends EmptyLevelChunk {
@@ -383,7 +406,7 @@ public class CaptureLevel extends Level implements net.minecraft.world.level.Wor
         }
 
         @Override
-        public void markPosForPostProcessing(BlockPos pos) {
+        public void markPosForPostprocessing(BlockPos pos) {
         }
     }
 

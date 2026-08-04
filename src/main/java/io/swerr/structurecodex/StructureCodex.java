@@ -22,7 +22,7 @@ public class StructureCodex implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        PayloadTypeRegistry.serverboundPlay().register(PlaceStructurePayload.TYPE, PlaceStructurePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(PlaceStructurePayload.TYPE, PlaceStructurePayload.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(PlaceStructurePayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
@@ -36,7 +36,8 @@ public class StructureCodex implements ModInitializer {
         Identifier structure = payload.structure();
         StructurePlacer.Placement placement;
         try {
-            placement = StructurePlacer.place(player, structure, payload.blend(), payload.distance());
+            placement = StructurePlacer.place(player, structure, payload.blend(),
+                    payload.vanillaTerrain(), payload.distance());
         } catch (Exception exception) {
             LOGGER.error("Could not place {}", structure, exception);
             player.sendSystemMessage(Component.translatable("structurecodex.place.crashed", structure.toString()));
