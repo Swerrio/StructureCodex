@@ -50,7 +50,7 @@ jobs:
             build/libs/!(*-@(dev|sources|javadoc)).jar
           name: "MC ${{ env.MC_VERSION }} // Structure Codex ${{ env.MOD_VERSION }}"
           version-type: release
-          modrinth-environment: client_only_server_optional
+          modrinth-environment: "client_required,server_optional"
           game-versions: ${{ env.MC_VERSION }}
           changelog-file: CHANGELOG.md
           retry-attempts: 3
