@@ -19,6 +19,9 @@ jobs:
         include:
           - branch: master
             java: '25'
+            games: 26.3
+          - branch: '26.2'
+            java: '25'
             games: 26.2
           - branch: '26.1'
             java: '25'
