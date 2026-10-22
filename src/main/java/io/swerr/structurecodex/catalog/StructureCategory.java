@@ -89,6 +89,10 @@ public enum StructureCategory {
             return RUINED_PORTALS;
         }
 
+        if (path.startsWith("abandoned_camp")) {
+            return SURFACE;
+        }
+
         if ("minecraft".equals(location.getNamespace())) {
             StructureCategory known = VANILLA.get(path);
             return known != null ? known : OTHER;
