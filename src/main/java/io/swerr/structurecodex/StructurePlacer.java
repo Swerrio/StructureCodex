@@ -23,9 +23,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.levelgen.Beardifier;
-import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -298,7 +298,7 @@ public final class StructurePlacer {
                         if (budget <= 0) {
                             return;
                         }
-                        double density = beardifier.compute(new DensityFunction.SinglePointContext(x, y, z));
+                        double density = beardifier.sampleValue(SamplerContext.EMPTY_UNCACHED, x, y, z);
                         if (density <= -BEARD_THRESHOLD) {
                             cursor.set(x, y, z);
                             BlockState current = level.getBlockState(cursor);
@@ -492,8 +492,9 @@ public final class StructurePlacer {
                 level.registryAccess(),
                 generator,
                 generator.getBiomeSource(),
+                level.getChunkSource().randomState().createClimateSampler(SamplerContext.EMPTY_UNCACHED),
                 level.getChunkSource().randomState(),
-                level.getStructureManager(),
+                level.getStructureTemplateManager(),
                 level.getSeed(),
                 where,
                 0,

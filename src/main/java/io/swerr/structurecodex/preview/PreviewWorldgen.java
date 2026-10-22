@@ -17,6 +17,7 @@ import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -62,7 +63,7 @@ public record PreviewWorldgen(RegistryAccess registries,
 
     public static PreviewWorldgen sandbox(MinecraftServer server, Structure structure, long seed) {
         RegistryAccess registries = server.registryAccess();
-        return sandbox(registries, server.getStructureManager(), pickStem(registries, structure), seed);
+        return sandbox(registries, server.getStructureTemplateManager(), pickStem(registries, structure), seed);
     }
 
     public static LevelStem pickStem(RegistryAccess registries, Structure structure) {
@@ -86,19 +87,21 @@ public record PreviewWorldgen(RegistryAccess registries,
                 generator.getBiomeSource(),
                 level.getChunkSource().randomState(),
                 level,
-                level.getServer().getStructureManager());
+                level.getServer().getStructureTemplateManager());
     }
 
     private static RandomState randomState(RegistryAccess registries, ChunkGenerator generator, long seed) {
-        HolderGetter<NormalNoise.NoiseParameters> noises = registries.lookupOrThrow(Registries.NOISE);
+        HolderGetter<NormalNoise> noises = registries.lookupOrThrow(Registries.NOISE);
         if (generator instanceof NoiseBasedChunkGenerator noise) {
-            return RandomState.create(noise.generatorSettings().value(), noises, seed);
+            return RandomState.create(noises, seed, noise.generatorSettings().value());
         }
-        return RandomState.create(registries, NoiseGeneratorSettings.OVERWORLD, seed);
+        return RandomState.create(noises, seed,
+                registries.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD).value());
     }
 
     public Structure.GenerationContext context(ChunkPos origin, long seed) {
-        return new Structure.GenerationContext(registries, generator, biomeSource, randomState,
+        return new Structure.GenerationContext(registries, generator, biomeSource,
+                randomState.createClimateSampler(SamplerContext.EMPTY_UNCACHED), randomState,
                 templates, seed, origin, heightAccessor, biome -> true);
     }
 }

@@ -13,7 +13,8 @@
   ],
   "client": [
     "GameRendererAccessor",
-    "GuiGraphicsExtractorAccessor"
+    "GuiGraphicsExtractorAccessor",
+    "PictureInPictureRendererAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

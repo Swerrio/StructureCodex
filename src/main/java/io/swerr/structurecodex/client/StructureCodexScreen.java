@@ -536,7 +536,7 @@ public class StructureCodexScreen extends Screen {
 
     @Override
     public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
-        if (fullscreen && event.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
+        if (fullscreen && event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE) {
             toggleFullscreen();
             return true;
         }

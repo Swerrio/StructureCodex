@@ -104,12 +104,12 @@ public final class ClientWorldgen {
             LayeredRegistryAccess<RegistryLayer> layers = RegistryLayer.createRegistryAccess();
             List<Registry.PendingTags<?>> staticTags =
                     TagLoader.loadTagsForExistingRegistries(resources, layers.getLayer(RegistryLayer.STATIC));
-            RegistryAccess.Frozen loadContext = layers.getAccessForLoading(RegistryLayer.WORLDGEN);
+            RegistryAccess.Frozen loadContext = layers.getAccessForLoading(RegistryLayer.WORLD);
             List<HolderLookup.RegistryLookup<?>> context =
                     TagLoader.buildUpdatedLookups(loadContext, staticTags);
 
             return RegistryDataLoader
-                    .load(resources, context, RegistryDataLoader.WORLDGEN_REGISTRIES, Util.backgroundExecutor())
+                    .load(resources, context, RegistryDataLoader.WORLD_REGISTRIES, Util.backgroundExecutor())
                     .thenApply(worldgen -> finish(layers, worldgen, packs))
                     .whenComplete((loaded, error) -> {
                         if (error != null) {
@@ -126,7 +126,7 @@ public final class ClientWorldgen {
                                  RegistryAccess.Frozen worldgen,
                                  Packs packs) {
         RegistryAccess.Frozen composite =
-                layers.replaceFrom(RegistryLayer.WORLDGEN, worldgen).compositeAccess();
+                layers.replaceFrom(RegistryLayer.WORLD, worldgen).compositeAccess();
         HolderGetter<Block> blocks = composite.lookupOrThrow(Registries.BLOCK)
                 .filterFeatures(packs.configuration().enabledFeatures());
         StructureTemplateManager templates = new StructureTemplateManager(

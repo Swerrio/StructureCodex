@@ -1,8 +1,6 @@
 package io.swerr.structurecodex.mixin;
 
 import io.swerr.structurecodex.preview.CaptureLevel;
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
@@ -17,19 +15,19 @@ import java.util.function.Predicate;
 @Mixin(StructureManager.class)
 public class StructureManagerMixin {
 
-    @Inject(method = "startsForStructure(Lnet/minecraft/world/level/ChunkPos;Ljava/util/function/Predicate;)Ljava/util/List;",
+    @Inject(method = "startsForStructure(IILjava/util/function/Predicate;)Ljava/util/List;",
             at = @At("HEAD"), cancellable = true)
     private void structurecodex$skipChunkLookupWhileCapturing(
-            ChunkPos pos, Predicate<Structure> matcher, CallbackInfoReturnable<List<StructureStart>> info) {
+            int sectionX, int sectionZ, Predicate<Structure> matcher, CallbackInfoReturnable<List<StructureStart>> info) {
         if (CaptureLevel.isCapturing()) {
             info.setReturnValue(List.of());
         }
     }
 
-    @Inject(method = "startsForStructure(Lnet/minecraft/core/SectionPos;Lnet/minecraft/world/level/levelgen/structure/Structure;)Ljava/util/List;",
+    @Inject(method = "startsForStructure(IILnet/minecraft/world/level/levelgen/structure/Structure;)Ljava/util/List;",
             at = @At("HEAD"), cancellable = true)
     private void structurecodex$skipSectionLookupWhileCapturing(
-            SectionPos pos, Structure structure, CallbackInfoReturnable<List<StructureStart>> info) {
+            int sectionX, int sectionZ, Structure structure, CallbackInfoReturnable<List<StructureStart>> info) {
         if (CaptureLevel.isCapturing()) {
             info.setReturnValue(List.of());
         }

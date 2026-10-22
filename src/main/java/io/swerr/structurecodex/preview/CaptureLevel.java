@@ -15,13 +15,13 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.clock.ClockManager;
+import net.minecraft.world.clock.ServerClockManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -31,7 +31,6 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -243,7 +242,7 @@ public class CaptureLevel extends Level implements net.minecraft.world.level.Wor
 
     @Override
     public ClockManager clockManager() {
-        return holder -> 0L;
+        return holder -> new ServerClockManager.ServerClockInstance();
     }
 
     @Override
@@ -288,16 +287,6 @@ public class CaptureLevel extends Level implements net.minecraft.world.level.Wor
 
     @Override
     public RecipeAccess recipeAccess() {
-        return null;
-    }
-
-    @Override
-    public PotionBrewing potionBrewing() {
-        return null;
-    }
-
-    @Override
-    public FuelValues fuelValues() {
         return null;
     }
 

@@ -21,7 +21,6 @@ import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.structure.StructureCheck;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
-import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.block.Block;
@@ -134,9 +133,9 @@ public final class StructureAssembler {
     private static ChunkPos findAnchor(Structure structure, PreviewWorldgen worldgen, RandomSource random) {
         try {
             BiomeSource source = worldgen.biomeSource();
-            Climate.Sampler sampler = worldgen.randomState().sampler();
             Pair<BlockPos, Holder<Biome>> found = source.findBiomeHorizontal(0, 64, 0,
-                    BIOME_SEARCH_RADIUS, BIOME_SEARCH_STEP, structure.biomes()::contains, random, true, sampler);
+                    BIOME_SEARCH_RADIUS, BIOME_SEARCH_STEP, structure.biomes()::contains, random, true,
+                    worldgen.randomState());
             if (found != null) {
                 return ChunkPos.containing(found.getFirst());
             }

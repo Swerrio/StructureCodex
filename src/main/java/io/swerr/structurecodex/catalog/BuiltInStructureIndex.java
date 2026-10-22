@@ -7,8 +7,8 @@ import io.swerr.structurecodex.StructureCodex;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.VanillaPackResources;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 
 import java.io.InputStream;
@@ -80,7 +80,7 @@ public final class BuiltInStructureIndex {
     }
 
     private static void readVanillaPack(Map<Identifier, StructureInfo> found) {
-        VanillaPackResources pack = ServerPacksSource.createVanillaPackSource();
+        PackResources pack = ServerPacksSource.createVanillaPackSource().fullResources();
         try {
             for (String namespace : pack.getNamespaces(PackType.SERVER_DATA)) {
                 pack.listResources(PackType.SERVER_DATA, namespace, PREFIX, (id, supplier) -> {

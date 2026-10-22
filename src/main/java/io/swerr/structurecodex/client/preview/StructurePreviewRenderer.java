@@ -1,20 +1,20 @@
 package io.swerr.structurecodex.client.preview;
 
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import io.swerr.structurecodex.mixin.GameRendererAccessor;
-import net.minecraft.client.renderer.DynamicUniforms;
+import io.swerr.structurecodex.mixin.PictureInPictureRendererAccessor;
+import net.minecraft.client.renderer.DynamicGpuData;
 import net.minecraft.client.renderer.GlobalSettingsUniform;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.fog.FogRenderer;
@@ -35,6 +35,7 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
     private static final float BOX_FILL = 0.94F;
 
     private GpuBuffer sectionUniform;
+    private GpuBuffer terrainUniform;
     private GpuBuffer globalsUniform;
 
     @Override
@@ -107,8 +108,9 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
                 .getTexture(TextureAtlas.LOCATION_BLOCKS)
                 .getTextureView();
 
-        GpuTextureView colour = RenderSystem.outputColorTextureOverride;
-        GpuTextureView depth = RenderSystem.outputDepthTextureOverride;
+        PictureInPictureRendererAccessor target = (PictureInPictureRendererAccessor) this;
+        GpuTextureView colour = target.structurecodex$textureView();
+        GpuTextureView depth = target.structurecodex$depthTextureView();
         if (colour == null || depth == null) {
             return;
         }
@@ -149,14 +151,18 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
         }
 
         pose.scale(1.0F, 1.0F, depthCompress);
-        pose.mulPose(Axis.XP.rotationDegrees(state.pitch()));
-        pose.mulPose(Axis.YP.rotationDegrees(state.yaw()));
+        pose.rotate(Axis.XP.rotationDegrees(state.pitch()));
+        pose.rotate(Axis.YP.rotationDegrees(state.yaw()));
         pose.scale(fit, -fit, -fit);
         pose.translate(-pivotX, -pivotY, -pivotZ);
 
         if (sectionUniform == null) {
             sectionUniform = RenderSystem.getDevice().createBuffer(() -> "StructureCodex preview section",
-                    GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, DynamicUniforms.CHUNK_SECTION_UBO_SIZE);
+                    GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, DynamicGpuData.CHUNK_SECTION_UBO_SIZE);
+        }
+        if (terrainUniform == null) {
+            terrainUniform = RenderSystem.getDevice().createBuffer(() -> "StructureCodex preview terrain",
+                    GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, DynamicGpuData.TERRAIN_TRANSFORM_UBO_SIZE);
         }
         if (globalsUniform == null) {
             globalsUniform = RenderSystem.getDevice().createBuffer(() -> "StructureCodex preview globals",
@@ -166,10 +172,10 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
         try (MemoryStack stack = MemoryStack.stackPush()) {
             ByteBuffer data = Std140Builder.onStack(stack, GlobalSettingsUniform.UBO_SIZE)
                     .putIVec3(0, 0, 0)
-                    .putVec3(0.0F, 0.0F, 0.0F)
-                    .putVec2(colour.getWidth(0), colour.getHeight(0))
                     .putFloat(1.0F)
+                    .putVec3(0.0F, 0.0F, 0.0F)
                     .putFloat(0.0F)
+                    .putVec2(colour.getWidth(0), colour.getHeight(0))
                     .putInt(0)
                     .putInt(0)
                     .get();
@@ -177,11 +183,17 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            ByteBuffer data = Std140Builder.onStack(stack, DynamicUniforms.CHUNK_SECTION_UBO_SIZE)
+            ByteBuffer data = Std140Builder.onStack(stack, DynamicGpuData.TERRAIN_TRANSFORM_UBO_SIZE)
                     .putMat4f(pose.last().pose())
-                    .putFloat(1.0F)
                     .putIVec2(atlas.getWidth(0), atlas.getHeight(0))
+                    .get();
+            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(terrainUniform.slice(), data);
+        }
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            ByteBuffer data = Std140Builder.onStack(stack, DynamicGpuData.CHUNK_SECTION_UBO_SIZE)
                     .putIVec3(0, 0, 0)
+                    .putFloat(1.0F)
                     .get();
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(sectionUniform.slice(), data);
         }
@@ -199,11 +211,12 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
             RenderSystem.bindDefaultUniforms(pass);
             pass.setUniform("Fog", renderer.structurecodex$fogRenderer().getBuffer(FogRenderer.FogMode.NONE));
             pass.setUniform("Globals", globalsUniform);
-            pass.bindTexture("Sampler2", renderer.structurecodex$uiLightmap().getTextureView(), sampler);
+            pass.setUniform("TerrainUniform", terrainUniform);
+            pass.setUniform("Sampler2", renderer.structurecodex$uiLightmap().getTextureView(), sampler);
 
             for (PreviewGpuMesh.Layer layer : mesh.layers()) {
-                pass.setPipeline(layer.layer().pipeline());
-                pass.bindTexture("Sampler0", atlas, sampler);
+                pass.setPipeline(RenderSystem.getCompiledPipeline(layer.layer().pipeline(false)));
+                pass.setUniform("Sampler0", atlas, sampler);
 
                 RenderPass.Draw<GpuBufferSlice[]> draw = new RenderPass.Draw<>(
                         0,
@@ -213,7 +226,7 @@ public class StructurePreviewRenderer extends PictureInPictureRenderer<Structure
                         0,
                         layer.indexCount(),
                         0,
-                        (slices, uploader) -> uploader.upload("ChunkSection", slices[0]));
+                        (slices, uploader) -> uploader.setUniform("ChunkSection", slices[0]));
 
                 pass.drawMultipleIndexed(List.of(draw), null, null, List.of("ChunkSection"), uniforms);
             }

@@ -13,7 +13,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
 
 public class StructureCodexClient implements ClientModInitializer {
 
@@ -27,8 +26,8 @@ public class StructureCodexClient implements ClientModInitializer {
 
         openCodex = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "structurecodex.key.open",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_K,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_K,
                 category));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
